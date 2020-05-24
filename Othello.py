@@ -24,6 +24,9 @@ blackTurn = False
 gameOver = False
 ## 8x8 board containing 64 cells
 board = [[None for x in range(0,8)] for y in range(0,8)]
+## The coordinates of the active piece on the board.
+x=0
+y=0
 
 
 class OthelloCell():
@@ -41,6 +44,15 @@ class OthelloCell():
 		pygame.gfxdraw.box(screen, (35+(self.x*61), 55+(self.y*61), 61, 61), GREEN)
 		# Black rectangle
 		pygame.draw.rect(screen, BLACK, (35+(self.x*61), 55+(self.y*61),61,61), 1)
+		color = ()
+		if(self.played):
+			for i in range(0,10):
+				if(self.black):
+					color = (5+8*i,5+8*i,5+8*i)
+				else:
+					color = (255-8*i,255-8*i,255-8*i)
+				pygame.gfxdraw.filled_circle(screen,35+(self.x*61)+(61//2),55+(self.y*61)+(61//2),(25-(i)),color)
+
 
 	def playIt(self):
 		'''Sets the value of played to true, to indicate that a piece has been placed on this cell.'''
@@ -129,7 +141,7 @@ def drawScoresAndMessages(whiteCount, blackCount):
 	myfont = pygame.font.SysFont('freesansbold.ttf', 40)
 	mytext = myfont.render('Black:',True,BLACK)
 	textRect = mytext.get_rect()
-	textRect.topleft = (590, 120)
+	textRect.topleft = (590, 160)
 	screen.blit(mytext, textRect)
 
 	mytext = myfont.render(str(blackCount),False,BLACK)
@@ -146,7 +158,11 @@ def countScore_DrawScoreBoard():
 	blackCount = 0
 	for x in range(0,8):
 		for y in range(0,8):
-			pass
+			if(board[x][y].hasBeenPlayed()==True):
+				if (board[x][y].getBlackStatus()==True):
+					blackCount+=1
+				else :
+					whiteCount+=1
 
 	drawScoresAndMessages(whiteCount,blackCount)
 
@@ -155,9 +171,20 @@ def checkTurnAndGameOver():
 	If neither can play, the game is over.  If black can't go, then set
 	blackTurn to false.  If white can't go, set blackTurn to true.
 	@return - Returns true if the game is over, false otherwise.'''
-	pass
+	whitecango=False
+	blackcango=False
+	global blackTurn
+	for i in range(0,6):
+		for j in range(0,8):
+			if (isValidMove(i,j,blackTurn)==True):
+				return False
+	for i in range(0,6):
+		for j in range(0,8):
+			if (isValidMove(i,j,not(blackTurn))==True):
+				blackTurn=False
+				return False
 
-def flipAllInThatDirection():
+def flipAllInThatDirection(xt,yt,i,j):
 	'''A helper method for playAndFlipTiles.  Flips pieces in a given direction.  The
 	 *  directions are as follows:
 	 *  (1,1) is up and right
@@ -174,14 +201,30 @@ def flipAllInThatDirection():
 	 *  @param  j       -1 is down, - is neutral, 1 is up.'''
 	
 	# As long as the tile is not equal to the players, loop through and flip it
-
-	pass
+	xt+=i
+	yt+=j
+	global blackTurn
+	while(board[xt][yt].getBlackStatus()!=blackTurn):
+		board[xt][yt].setBlack(blackTurn)
+		board[xt][yt].playIt()
+		print('flipped')
+		xt+=i
+		yt+=j
 
 def playAndFlipTiles():
 	'''Places a game piece on the current cell for the current player.  Also flips the
 	 *  appropriate neighboring game pieces, checking the 8 possible directions from the
 	 *  current cell.'''
-	pass
+	global blackTurn
+	global x
+	global y
+	board[x][y].setBlack(blackTurn)
+	board[x][y].playIt()
+	for i in range(-1,2):
+		for j in range(-1,2):
+			if(not(i==0 and j==0)and directionValid(x,y,i,j,blackTurn)):
+				print('flip')
+				flipAllInThatDirection(x,y,i,j)
 
 def directionValid(xt,yt,i,j,bTurn):
 	'''Checks to see if a valid move can be made at the indicated OthelloCell, in a 
@@ -202,9 +245,25 @@ def directionValid(xt,yt,i,j,bTurn):
 	 *  @return         Returns true if this direction has pieces to be flipped, false otherwise.'''
 	
 	# loop through the direction
-
-
-	pass
+	xt+=i
+	yt+=j
+	if(xt>=0 and xt<=7 and yt>=0 and yt <=7):
+		if(board[xt][yt].hasBeenPlayed()==False):
+			print('invalid move')
+			return False
+		elif(board[xt][yt].getBlackStatus()==bTurn):
+			print('invalid move')
+			return False
+		else:
+			while(xt>=0 and xt<=7 and yt>=0 and yt <=7):
+				if(board[xt][yt].hasBeenPlayed()==True and board[xt][yt].getBlackStatus()==bTurn):
+					print('valid move')
+					return True
+				elif(board[xt][yt].hasBeenPlayed()==False):
+					return False
+				xt+=i;
+				yt+=j;
+	return False
 
 def isValidMove(xt,yt,bTurn):
 	'''Checks to see if a valid move can be made at the indicated OthelloCell,
@@ -219,8 +278,12 @@ def isValidMove(xt,yt,bTurn):
 
 	# Check the 8 possible directions for valid move
 		# If the direction is valid then return true
-
-	pass
+	if(board[xt][yt].hasBeenPlayed()==True):
+		return False
+	for i in range(-1,2):
+		for j in range (-1,2):
+			if (not(i==0 and j==0) and directionValid(xt,yt,i,j,bTurn)):
+				return True
 
 def makeChoice():
 	'''Waits for the user to make a choice. The user can make a move
@@ -229,24 +292,27 @@ def makeChoice():
 	
 	global blackTurn 
 	global mousePressReady
-
+	global x
+	global y
 	moveChosen = False
 	while(not(moveChosen)):
 		if(mousePressReady and bool(pygame.mouse.get_pressed()[0])):
 			mousePressReady = False
-			x = pygame.mouse.get_pos()[0]
-			y = pygame.mouse.get_pos()[1]
+			xval = pygame.mouse.get_pos()[0]
+			yval = pygame.mouse.get_pos()[1]
 			# Determe if the click was outside the board
-			if (x<35 or x>523 or y<55 or y>543):
+			if (xval<35 or xval>523 or yval<55 or yval>543):
 				# Click wasnt valid so return
 				return
 			else:
 				print(x,y)
 			
-			tempx = x
-			tempy = y
+			tempx = (xval - 35)//61
+			tempy = (yval - 55)//61
 			# Check if users move is valid
 			if (isValidMove(tempx, tempy, blackTurn)):
+				x = tempx
+				y = tempy
 				playAndFlipTiles()
 				# Change the turn
 				blackTurn = not(blackTurn)
@@ -261,6 +327,7 @@ def main():
 	'''Runs an endless loop to play the game.  Even if the game is over, the
 		loop is still ready for the user to press "RESET" to play again.'''
 	run = True
+	global gameOver
 	while(run):
 		# Quit the game if the quit icon is pressed
 		for event in pygame.event.get():
