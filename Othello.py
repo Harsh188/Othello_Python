@@ -16,7 +16,7 @@ size = WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode(size)
 
 # Global Variables
-## 
+## Variable that indicates if the mouse is ready to be pressed
 mousePressReady = False
 ## Variable to store whos turn
 blackTurn = False
@@ -62,12 +62,17 @@ def startBoard():
 	'''Initial population of the board'''
 	global blackTurn
 	global mousePressReady
+	# Black starts off the game
 	blackTurn = True
+	# Mouse can now be used
 	mousePressReady = True
+	# Window title
 	pygame.display.set_caption("Othello")
+	# Initialize the board
 	for i in range(0,8):
 		for j in range(0,8):
 			board[i][j]=OthelloCell(i,j)
+	# Set the initial four tiles in the middle
 	board[3][3].playIt();
 	board[3][3].setBlack(True);
 	board[4][4].playIt();
@@ -107,16 +112,29 @@ def drawScoresAndMessages(whiteCount, blackCount):
 	# Displaying text
 	screen.blit(mytext, textRect)
 
+
 	# Now repeat for white score and black score
 	myfont = pygame.font.SysFont('freesansbold.ttf', 40)
+	mytext = myfont.render('White:',True,BLACK)
+	textRect = mytext.get_rect()
+	textRect.topleft = (590, 120)
+	screen.blit(mytext, textRect)
+
+	myfont = pygame.font.SysFont('freesansbold.ttf', 40)
 	mytext = myfont.render(str(whiteCount),False,BLACK)
+	textRect = mytext.get_rect()
+	textRect.topleft = (700, 120)
+	screen.blit(mytext, textRect)
+
+	myfont = pygame.font.SysFont('freesansbold.ttf', 40)
+	mytext = myfont.render('Black:',True,BLACK)
 	textRect = mytext.get_rect()
 	textRect.topleft = (590, 120)
 	screen.blit(mytext, textRect)
 
 	mytext = myfont.render(str(blackCount),False,BLACK)
 	textRect = mytext.get_rect()
-	textRect.topleft = (700, 120)
+	textRect.topleft = (700, 160)
 	screen.blit(mytext, textRect)
 
 def countScore_DrawScoreBoard():
@@ -154,6 +172,9 @@ def flipAllInThatDirection():
 	 *  @param  yt      The vertical coordinate value in the board.
 	 *  @param  i       -1 is left, 0 is neutral, 1 is right,
 	 *  @param  j       -1 is down, - is neutral, 1 is up.'''
+	
+	# As long as the tile is not equal to the players, loop through and flip it
+
 	pass
 
 def playAndFlipTiles():
@@ -162,7 +183,7 @@ def playAndFlipTiles():
 	 *  current cell.'''
 	pass
 
-def directionValid():
+def directionValid(xt,yt,i,j,bTurn):
 	'''Checks to see if a valid move can be made at the indicated OthelloCell, in a 
 	 *  particular direction (there are 8 possible directions). These are indicated by:
 	 *  (1,1) is up and right
@@ -179,6 +200,10 @@ def directionValid():
 	 *  @param  j       -1 is down, - is neutral, 1 is up.
 	 *  @param  bTurn   Indicates the current player, true for black, false for white.
 	 *  @return         Returns true if this direction has pieces to be flipped, false otherwise.'''
+	
+	# loop through the direction
+
+
 	pass
 
 def isValidMove(xt,yt,bTurn):
@@ -189,6 +214,12 @@ def isValidMove(xt,yt,bTurn):
 	 *  @param  bTurn   Indicates the current player, true for black, false for white
 	 *  @return         Returns true if a valid move can be made for this player at
 	 *                  this position, false otherwise.'''
+	
+	# Check if tile has been played
+
+	# Check the 8 possible directions for valid move
+		# If the direction is valid then return true
+
 	pass
 
 def makeChoice():
