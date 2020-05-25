@@ -1,3 +1,28 @@
+'''
+Authors: Harshith MohanKumar & Pranav Balimurali
+Date: 25th May 2020
+Description: A board game, with the following rules.
+ * Two black and two white pieces are placed in the middle of the 8 x 8 board 
+ * in the form of a square. W and B are placed on the top middle row, and then B, W 
+ * is placed on the row below it.  Black plays first and places its piece on a 
+ * valid spot on the grid. You must place a disc on a spot that allows you to "flank" 
+ * or "capture" at least one of your opponent's discs by bordering them "in a row".
+ * You must flip all captured discs to your color.  To capture your opponent's discs
+ * you must have 1 of your own pieces at the end of a row and then on your turn place
+ * a new piece at the beginning of the row. Everything in between on that row is now 
+ * flipped to your color. You can only capture rows of a single color adjacent to each 
+ * other; there cannot be any open space or your own discs between them or the combo is 
+ * interrupted.  You can flank any number of discs. You may capture discs vertically, 
+ * horizontally, diagonally.  You may capture in multiple directions at the same time. 
+ * All discs that can be flipped must be flipped. You cannot pick and choose which ones 
+ * are captured.  If you cannot make a valid move then your turn is forfeit and your 
+ * opponent may go again. If you have a valid move available to you then you must make 
+ * that move and are not allowed to forfeit your turn.  When neither player can make 
+ * any further play then the game is over.  Each player counts the number of spaces 
+ * occupied by their color. Highest count is the winner. Games can end before all 
+ * spaces are filled.
+'''
+
 # Imports
 import sys, pygame
 import os
