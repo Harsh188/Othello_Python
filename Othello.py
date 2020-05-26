@@ -208,8 +208,7 @@ def checkTurnAndGameOver():
 	If neither can play, the game is over.  If black can't go, then set
 	blackTurn to false.  If white can't go, set blackTurn to true.
 	@return - Returns true if the game is over, false otherwise.'''
-	whitecango=False
-	blackcango=False
+
 	global blackTurn
 	for i in range(0,6):
 		for j in range(0,8):
@@ -218,7 +217,7 @@ def checkTurnAndGameOver():
 	for i in range(0,6):
 		for j in range(0,8):
 			if (isValidMove(i,j,not(blackTurn))==True):
-				blackTurn=False
+				blackTurn=True
 				return False
 
 def flipAllInThatDirection(xt,yt,i,j):
