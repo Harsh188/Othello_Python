@@ -27,6 +27,7 @@ Description: A board game, with the following rules.
 import sys, pygame
 import os
 import pygame.gfxdraw
+import copy
 
 # Colors 
 WHITE = (255, 255, 255)
@@ -47,6 +48,10 @@ mousePressReady = False
 blackTurn = False
 ## Variable to determine if game has ended
 gameOver = False
+## User played
+userPlayed = False
+## best move
+bestMove = []
 ## 8x8 board containing 64 cells
 board = [[None for x in range(0,8)] for y in range(0,8)]
 ## The coordinates of the active piece on the board.
@@ -99,6 +104,9 @@ def startBoard():
 	'''Initial population of the board'''
 	global blackTurn
 	global mousePressReady
+	global userPlayed
+
+	userPlayed=False
 	# Black starts off the game
 	blackTurn = True
 	# Mouse can now be used
@@ -148,7 +156,11 @@ def drawScoresAndMessages(whiteCount, blackCount):
 	textRect.topleft = (590, 55)
 	# Displaying text
 	screen.blit(mytext, textRect)
-
+	#Drawing boxes for the score
+	pygame.gfxdraw.box(screen, (692,117,30,30),WHITE)
+	pygame.draw.rect(screen, BLACK, (692,117,30,30), 1)
+	pygame.gfxdraw.box(screen, (692,157,30,30),WHITE)
+	pygame.draw.rect(screen, BLACK, (692,157,30,30), 1)
 
 	# Now repeat for white score and black score
 	myfont = pygame.font.SysFont('freesansbold.ttf', 40)
@@ -158,7 +170,7 @@ def drawScoresAndMessages(whiteCount, blackCount):
 	screen.blit(mytext, textRect)
 
 	myfont = pygame.font.SysFont('freesansbold.ttf', 40)
-	mytext = myfont.render(str(whiteCount),False,BLACK)
+	mytext = myfont.render(str(whiteCount),True,BLACK)
 	textRect = mytext.get_rect()
 	textRect.topleft = (700, 120)
 	screen.blit(mytext, textRect)
@@ -169,7 +181,7 @@ def drawScoresAndMessages(whiteCount, blackCount):
 	textRect.topleft = (590, 160)
 	screen.blit(mytext, textRect)
 
-	mytext = myfont.render(str(blackCount),False,BLACK)
+	mytext = myfont.render(str(blackCount),True,BLACK)
 	textRect = mytext.get_rect()
 	textRect.topleft = (700, 160)
 	screen.blit(mytext, textRect)
@@ -232,7 +244,7 @@ def flipAllInThatDirection(xt,yt,i,j):
 	while(board[xt][yt].getBlackStatus()!=blackTurn):
 		board[xt][yt].setBlack(blackTurn)
 		board[xt][yt].playIt()
-		print('flipped')
+		# print('flipped')
 		xt+=i
 		yt+=j
 
@@ -248,7 +260,7 @@ def playAndFlipTiles():
 	for i in range(-1,2):
 		for j in range(-1,2):
 			if(not(i==0 and j==0)and directionValid(x,y,i,j,blackTurn)):
-				print('flip')
+				# print('flip')
 				flipAllInThatDirection(x,y,i,j)
 
 def directionValid(xt,yt,i,j,bTurn):
@@ -274,15 +286,15 @@ def directionValid(xt,yt,i,j,bTurn):
 	yt+=j
 	if(xt>=0 and xt<=7 and yt>=0 and yt <=7):
 		if(board[xt][yt].hasBeenPlayed()==False):
-			print('invalid move')
+			# print('invalid move')
 			return False
 		elif(board[xt][yt].getBlackStatus()==bTurn):
-			print('invalid move')
+			# print('invalid move')
 			return False
 		else:
 			while(xt>=0 and xt<=7 and yt>=0 and yt <=7):
 				if(board[xt][yt].hasBeenPlayed()==True and board[xt][yt].getBlackStatus()==bTurn):
-					print('valid move')
+					# print('valid move')
 					return True
 				elif(board[xt][yt].hasBeenPlayed()==False):
 					return False
@@ -319,6 +331,7 @@ def makeChoice():
 	global mousePressReady
 	global x
 	global y
+	global userPlayed
 	moveChosen = False
 	while(not(moveChosen)):
 		if(mousePressReady and bool(pygame.mouse.get_pressed()[0])):
@@ -341,18 +354,102 @@ def makeChoice():
 				playAndFlipTiles()
 				# Change the turn
 				blackTurn = not(blackTurn)
+				userPlayed = True
 
 		if(not(pygame.mouse.get_pressed()[0]) and not(mousePressReady)):
 			mousePressReady = True
 			return
 		pygame.time.wait(30)
 		moveChosen = True
+	pygame.time.wait(30)
+	if userPlayed:
+		minimaxChoice()
+		print("machine")
+		userPlayed=False
+
+def getScore():
+	whiteCount = 0
+	blackCount = 0
+	for x in range(0,8):
+		for y in range(0,8):
+			if(board[x][y].hasBeenPlayed()==True):
+				if (board[x][y].getBlackStatus()==True):
+					blackCount+=1
+				else :
+					whiteCount+=1
+	return (whiteCount-blackCount)
+
+def getValidMoves(bTurn):
+	m = []
+	for i in range(0,8):
+		for j in range(0,8):
+			valid = isValidMove(i,j,bTurn)
+			if valid is not None:
+				if (valid):
+					m.append([i,j])
+	return m
+
+def minimax(depth,bTurn):
+	global x
+	global y
+	global bestMove
+	score = getScore()
+	print(depth)
+	print(score)
+	if depth ==0:
+		return score
+	if max:
+		bestVal = -999999
+		moves = getValidMoves(bTurn)
+		if moves is not None:
+			print(moves)
+			for m in moves:
+				x = m[0]
+				y = m[1]
+				playAndFlipTiles()
+				val = minimax(depth-1,not(bTurn))
+				print()
+				print(val)
+				if(val>bestVal):
+					bestVal = val
+					bestMove = m
+		return score
+	else:
+		bestVal = 999999
+		moves = getValidMoves(bTurn)
+		if moves is not None:
+			print(moves)
+			for m in moves:
+				x = m[0]
+				y = m[1]
+				playAndFlipTiles()
+				val = minimax(depth-1,not(bTurn))
+				if(val<bestVal):
+					bestVal = val
+					bestMove = m
+		return score
+
+def minimaxChoice(depth=3):
+	global blackTurn
+	global board
+	global x
+	global y
+	global bestMove
+	tempBoard = copy.deepcopy(board)
+	minimax(depth,blackTurn)
+	board = copy.deepcopy(tempBoard)
+	x = bestMove[0]
+	y = bestMove[1]
+	playAndFlipTiles()
+	blackTurn = not(blackTurn)
 
 def main():
 	'''Runs an endless loop to play the game.  Even if the game is over, the
 		loop is still ready for the user to press "RESET" to play again.'''
 	run = True
 	global gameOver
+	global board
+	global userPlayed
 	while(run):
 		# Quit the game if the quit icon is pressed
 		for event in pygame.event.get():
