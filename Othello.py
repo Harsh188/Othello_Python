@@ -40,6 +40,8 @@ size = WIDTH, HEIGHT = 800, 600
 
 # Window
 screen = pygame.display.set_mode(size)
+# Initialize font
+pygame.font.init()
 
 # Global Variables
 ## Variable that indicates if the mouse is ready to be pressed
@@ -57,7 +59,6 @@ board = [[None for x in range(0,8)] for y in range(0,8)]
 ## The coordinates of the active piece on the board.
 x=0
 y=0
-
 
 class OthelloCell():
 	"""docstring for OthelloCell"""
@@ -144,8 +145,6 @@ def drawScoresAndMessages(whiteCount, blackCount):
 	board and updates the scores after each play
 	@param  whiteCount      The current count of the white pieces on the board.
 	@param  blackCount      The current count of the black pieces on the board.'''
-	# Initialize font
-	pygame.font.init()
 	# setting font and size
 	myfont = pygame.font.SysFont('freesansbold.ttf', 80)
 	# Setting the context of the text
@@ -157,10 +156,10 @@ def drawScoresAndMessages(whiteCount, blackCount):
 	# Displaying text
 	screen.blit(mytext, textRect)
 	#Drawing boxes for the score
-	pygame.gfxdraw.box(screen, (692,117,30,30),WHITE)
-	pygame.draw.rect(screen, BLACK, (692,117,30,30), 1)
-	pygame.gfxdraw.box(screen, (692,157,30,30),WHITE)
-	pygame.draw.rect(screen, BLACK, (692,157,30,30), 1)
+	pygame.gfxdraw.box(screen, (692,117,50,30),WHITE)
+	pygame.draw.rect(screen, BLACK, (692,117,50,30), 1)
+	pygame.gfxdraw.box(screen, (692,157,50,30),WHITE)
+	pygame.draw.rect(screen, BLACK, (692,157,50,30), 1)
 
 	# Now repeat for white score and black score
 	myfont = pygame.font.SysFont('freesansbold.ttf', 40)
@@ -204,21 +203,25 @@ def countScore_DrawScoreBoard():
 	drawScoresAndMessages(whiteCount,blackCount)
 
 def checkTurnAndGameOver():
-	'''Checks to see if black can play.  Checks to see if white can play.
+	'''Checks to see if black can play. Checks to see if white can play.
 	If neither can play, the game is over.  If black can't go, then set
 	blackTurn to false.  If white can't go, set blackTurn to true.
 	@return - Returns true if the game is over, false otherwise.'''
 
 	global blackTurn
-	for i in range(0,6):
-		for j in range(0,8):
-			if (isValidMove(i,j,blackTurn)==True):
-				return False
-	for i in range(0,6):
-		for j in range(0,8):
-			if (isValidMove(i,j,not(blackTurn))==True):
-				blackTurn=True
-				return False
+	if blackTurn:
+		for i in range(0,8):
+			for j in range(0,8):
+				if (isValidMove(i,j,blackTurn)==True):
+					return False
+		blackTurn=False
+	else:
+		for i in range(0,8):
+			for j in range(0,8):
+				if (isValidMove(i,j,not(blackTurn))==True):
+					return False
+		blackTurn=True
+	return True
 
 def flipAllInThatDirection(xt,yt,i,j):
 	'''A helper method for playAndFlipTiles.  Flips pieces in a given direction.  The
@@ -442,6 +445,19 @@ def minimaxChoice(depth=3):
 	playAndFlipTiles()
 	blackTurn = not(blackTurn)
 
+def resetGame():
+	myfont = pygame.font.SysFont('freesansbold.ttf', 70)
+	mytext=myfont.render('Default',True,BLACK)
+	if(getScore()>0):
+		mytext = myfont.render('White Wins!',True,BLACK)
+	elif(getScore()<0):
+		mytext = myfont.render('Black Wins!',True,BLACK)
+	else:
+		mytext = myfont.render('Tie Game!',True,BLACK)
+	textRect = mytext.get_rect()
+	textRect.topleft = (590, 200)
+	screen.blit(mytext, textRect)
+
 def main():
 	'''Runs an endless loop to play the game.  Even if the game is over, the
 		loop is still ready for the user to press "RESET" to play again.'''
@@ -466,6 +482,11 @@ def main():
 		makeChoice()
 		# Check whos turn it is and determine if the game is over
 		gameOver = checkTurnAndGameOver()
+		if gameOver:
+			print(gameOver)
+			resetGame()
+		# Update the full display Surface to the screen
+		pygame.display.flip()
 
 if __name__ == '__main__':
 	# Initialize pygame display
