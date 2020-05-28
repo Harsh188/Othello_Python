@@ -83,7 +83,8 @@ class OthelloCell():
 				else:
 					color = (255-8*i,255-8*i,255-8*i)
 				pygame.gfxdraw.filled_circle(screen,35+(self.x*61)+(61//2),55+(self.y*61)+(61//2),(25-(i)),color)
-
+				if self.black:
+					pygame.gfxdraw.aacircle(screen,35+(self.x*61)+(61//2),55+(self.y*61)+(61//2),(25-(i)),color)
 
 	def playIt(self):
 		'''Sets the value of played to true, to indicate that a piece has been placed on this cell.'''
@@ -185,13 +186,21 @@ def drawScoresAndMessages(whiteCount, blackCount):
 	textRect.topleft = (700, 160)
 	screen.blit(mytext, textRect)
 
+	#Reset Button
+	pygame.draw.rect(screen,WHITE,(590,200,100,40),0)
+	pygame.draw.rect(screen,BLACK,(590,200,100,40),1)
+	mytext = myfont.render('RESET',True,BLACK)
+	textRect = mytext.get_rect()
+	textRect.topleft = (593, 207)
+	screen.blit(mytext, textRect)
+
 def countScore_DrawScoreBoard():
 	'''Counts the white pieces on the board, and the black pieces on the board.
 	Displays these numbers toward the top of the board, for the current state
 	of the board.  Also prints whether it is "BLACK'S TURN" or "WHITE'S TURN"
 	or "GAME OVER". '''
-	whiteCount = 0
-	blackCount = 0
+	whiteCount = -2
+	blackCount = -2
 	for x in range(0,8):
 		for y in range(0,8):
 			if(board[x][y].hasBeenPlayed()==True):
@@ -323,6 +332,9 @@ def isValidMove(xt,yt,bTurn):
 		for j in range (-1,2):
 			if (not(i==0 and j==0) and directionValid(xt,yt,i,j,bTurn)):
 				return True
+def resetBoard():
+	startBoard()
+	drawBoard()
 
 def makeChoice():
 	'''Waits for the user to make a choice. The user can make a move
@@ -342,11 +354,14 @@ def makeChoice():
 			yval = pygame.mouse.get_pos()[1]
 			# Determe if the click was outside the board
 			if (xval<35 or xval>523 or yval<55 or yval>543):
+				# Determine if the click was in reset 590,200,100,40
+				if (xval>590 or xval<690 or yval>200 or yval<240):
+					print('reset')
+					resetBoard()
 				# Click wasnt valid so return
 				return
 			else:
 				print(x,y)
-			
 			tempx = (xval - 35)//61
 			tempy = (yval - 55)//61
 			# Check if users move is valid
@@ -361,7 +376,6 @@ def makeChoice():
 		if(not(pygame.mouse.get_pressed()[0]) and not(mousePressReady)):
 			mousePressReady = True
 			return
-		pygame.time.wait(30)
 		moveChosen = True
 	pygame.time.wait(30)
 	if userPlayed:
@@ -445,17 +459,24 @@ def minimaxChoice(depth=3):
 	playAndFlipTiles()
 	blackTurn = not(blackTurn)
 
-def resetGame():
-	myfont = pygame.font.SysFont('freesansbold.ttf', 70)
+def endGame():
+	myfont = pygame.font.SysFont('freesansbold.ttf', 55)
 	mytext=myfont.render('Default',True,BLACK)
+	textRect = mytext.get_rect()
 	if(getScore()>0):
 		mytext = myfont.render('White Wins!',True,BLACK)
+		textRect.topleft = (380//2, 560//2)
 	elif(getScore()<0):
 		mytext = myfont.render('Black Wins!',True,BLACK)
+		textRect.topleft = (380//2, 560//2)
 	else:
 		mytext = myfont.render('Tie Game!',True,BLACK)
-	textRect = mytext.get_rect()
-	textRect.topleft = (590, 200)
+		textRect.topleft = (400//2, 560//2)
+	
+	
+	# Draw who wins at middle of board 30, 50, 500, 500
+	pygame.draw.rect(screen,WHITE,(350//2,550//2,260,40),0)
+	pygame.draw.rect(screen,BLACK,(350//2,550//2,260,40),1)
 	screen.blit(mytext, textRect)
 
 def main():
@@ -483,8 +504,7 @@ def main():
 		# Check whos turn it is and determine if the game is over
 		gameOver = checkTurnAndGameOver()
 		if gameOver:
-			print(gameOver)
-			resetGame()
+			endGame()
 		# Update the full display Surface to the screen
 		pygame.display.flip()
 
